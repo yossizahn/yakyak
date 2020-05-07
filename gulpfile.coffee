@@ -230,7 +230,7 @@ zipIt = (folder, filePrefix, done) ->
     zipName = path.join outdeploy, "#{filePrefix}.#{ext}"
     folder = path.basename folder
     #
-    args = ['-r', '-q', '-y', '-X', zipName, folder]
+    args = ['-r', '-q', '-X', zipName, folder]
     opts = {
         cwd: outdeploy
         stdio: [0, 1, 'pipe']

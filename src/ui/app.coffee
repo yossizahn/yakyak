@@ -1,5 +1,3 @@
-require('win-ca')
-
 ipc          = require('electron').ipcRenderer
 clipboard    = require('electron').clipboard
 path         = require('path')

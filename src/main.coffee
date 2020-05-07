@@ -1,3 +1,5 @@
+require('win-ca')
+
 Client    = require 'hangupsjs'
 Q         = require 'q'
 login     = require './login'

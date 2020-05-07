@@ -1,6 +1,6 @@
 {
   "name": "yakyak",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "Chat client for Google Hangouts",
   "main": "main.js",
   "scripts": {
@@ -18,10 +18,12 @@
     "deploy:linux-x64:deb": "gulp deploy:linux-x64:deb",
     "deploy:linux-x64:flatpak": "gulp deploy:linux-x64:flatpak",
     "deploy:linux-x64:rpm": "gulp deploy:linux-x64:rpm",
+    "deploy:linux-x64:pacman": "gulp deploy:linux-x64:pacman",
     "deploy:linux-ia32": "gulp deploy:linux-ia32",
     "deploy:linux-ia32:deb": "gulp deploy:linux-ia32:deb",
     "deploy:linux-ia32:flatpak": "gulp deploy:linux-ia32:flatpak",
     "deploy:linux-ia32:rpm": "gulp deploy:linux-ia32:rpm",
+    "deploy:linux-ia32:pacman": "gulp deploy:linux-ia32:pacman",
     "deploy:win32-x64": "gulp deploy:win32-x64",
     "deploy:win32-ia32": "gulp deploy:win32-ia32",
     "deploy:darwin-x64": "gulp deploy:darwin-x64"
@@ -78,7 +80,7 @@
     "chai": "^4.2.0",
     "coffeescript": "^1.9.3",
     "devtron": "^1.4.0",
-    "electron": "^8.0.0",
+    "electron": "^7.1.7",
     "electron-packager": "^14.1.1",
     "gulp": "^4.0.2",
     "gulp-changed": "^4.0.2",

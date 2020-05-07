@@ -36,7 +36,7 @@ We love [bug reports](https://github.com/yakyak/yakyak/issues)!
 * Focus/typing indications (mainly a design issue. keep it clean)
 * Offer alternative color schemes
 * Translations in 22 languages so far:
-  * English / Portuguese _(Portugal and Brazil)_ / French / Spanish / Czech / German / Polish / Russian / Hebrew / Ukrainian / Slovenian / Korean / Tamil / Romanian / Swedish / Japanese / Italian / Danish / Bengali / Slovak / Turkish
+  * English / Portuguese _(Portugal and Brazil)_ / French / Spanish / Czech / German / Polish / Russian / Hebrew / Ukrainian / Slovenian / Korean / Tamil / Romanian / Swedish / Japanese / Italian / Danish / Bengali / Slovak / Turkish / Arabic / Telugu / Finnish /Breton / Simplified chinese
   * We're looking for volunteers to translate the app to new languages
 
 ![sshot1](https://cloud.githubusercontent.com/assets/123929/16032393/991d63f8-3205-11e6-98bf-31f1b57cdc96.png)
@@ -124,11 +124,12 @@ $ npm run deploy
 $ npm run deploy:darwin-x64
 ```
 
-If you have [fpm](https://github.com/jordansissel/fpm) installed (`gem install fpm`), you can also build RPM and Deb packages:
+If you have [fpm](https://github.com/jordansissel/fpm) installed (`gem install fpm`), you can also build RPM, Deb, or Arch packages:
 
 ```bash
 $ npm run deploy:linux-x64:rpm
 $ npm run deploy:linux-x64:deb
+$ npm run deploy:linux-x64:pacman
 ```
 
 *note:* if you are building *Windows* binaries in *Linux* or *Mac OS X*, Wine (1.6 or higher) must be installed. It also requires a 32-bit Wine installation when building Windows 32-bit binary.

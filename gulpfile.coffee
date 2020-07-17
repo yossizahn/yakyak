@@ -27,6 +27,7 @@ outapp = './app'
 outui  = outapp + '/ui'
 
 paths =
+    snyk:    './.snyk'
     deploy:  './dist/'
     README:  './README.md'
     package: './package.json'
@@ -120,6 +121,10 @@ gulp.task 'media', ->
     gulp.src paths.media
         .pipe gulp.dest path.join outapp, 'media'
 
+
+gulp.task 'snyk', ->
+    gulp.src paths.snyk
+        .pipe gulp.dest path.join outapp
 # copy images
 gulp.task 'images', ->
     gulp.src paths.images

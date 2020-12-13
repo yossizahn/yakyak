@@ -7,27 +7,6 @@ Menu   = remote.Menu
 {check, versionToInt} = require '../version'
 
 module.exports = view (models) ->
-
-    # simple context menu that can only copy
-    remote.getCurrentWindow().webContents.on 'context-menu', (e, params) ->
-        e.preventDefault()
-        menuTemplate = [{
-            label: 'Copy'
-            role: 'copy'
-            enabled: params.editFlags.canCopy
-        }
-        {
-            label: "Copy Link"
-            visible: params.linkURL != '' and params.mediaType == 'none'
-            click: () ->
-                if process.platform == 'darwin'
-                    clipboard
-                    .writeBookmark params.linkText, params.linkText
-                else
-                    clipboard.writeText params.linkText
-        }]
-        Menu.buildFromTemplate(menuTemplate).popup remote.getCurrentWindow()
-
     #
     # decide if should update
     localVersion    = remote.require('electron').app.getVersion()
@@ -62,6 +41,7 @@ module.exports = view (models) ->
                 ul ->
                     li 'Davide Bertola'
                     li 'Martin Algesten'
+                    li 'André Veríssimo'
             div ->
                 h3 i18n.__('menu.help.about.contributors:Contributors')
                 ul ->
@@ -69,7 +49,8 @@ module.exports = view (models) ->
                     li 'Max Kueng'
                     li 'Arnaud Riu'
                     li 'Austin Guevara'
-                    li 'André Veríssimo'
+                    li 'Mathias Tillman'
+
         div class: 'home', ->
             href = "https://github.com/yakyak/yakyak"
             a href: href

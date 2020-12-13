@@ -58,6 +58,8 @@ ipc.send 'seti18n', i18nOpts, viewstate.language
 
 # Set locale if exists, otherwise, keep 'en'
 action 'changelanguage', viewstate.language
+action 'setspellchecklanguage', viewstate.spellcheckLanguage
+
 # does not update viewstate -- why? because locale can be recovered later
 #   not the best reasoning :)
 
@@ -163,6 +165,12 @@ ipc.on 'message', (msg) ->
 ipc.on 'init', (ev, data) -> dispatcher.init data
 # events from hangupsjs
 require('./events').forEach (n) -> ipc.on n, (ev, data) -> action n, data
+
+# events from tray menu
+ipc.on 'menuaction', (ev, name) ->
+    console.log('menuaction from main process', name)
+    action name
+
 # response from getentity
 ipc.on 'getentity:result', (ev, r, data) ->
     action 'addentities', r.entities, data?.add_to_conv
@@ -253,13 +261,16 @@ window.addEventListener 'beforeunload', (e) ->
 window.addEventListener 'keypress', (e) ->
     if e.keyCode == 23 and e.ctrlKey
       ipc.send 'ctrl+w__pressed', ''
-      
+
 currentWindow.webContents.on 'context-menu', (e, params) ->
+    console.log('context-menu', e, params)
     e.preventDefault()
     canShow = [viewstate.STATE_NORMAL,
-               viewstate.STATE_ADD_CONVERSATION].includes(viewstate.state)
+               viewstate.STATE_ADD_CONVERSATION,
+               viewstate.STATE_ABOUT].includes(viewstate.state)
     if canShow
         contextmenu(params, viewstate).popup remote.getCurrentWindow()
+
 
 # tell the startup state
 action 'wonline', window.navigator.onLine

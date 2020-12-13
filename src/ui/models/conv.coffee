@@ -11,7 +11,7 @@ domerge = (id, props) -> lookup[id] = merge (lookup[id] ? {}), props
 add = (conv) ->
     # rejig the structure since it's insane
     if conv?.conversation?.conversation_id?.id
-        {conversation, event} = conv
+        {conversation, event = []} = conv
         conv = conversation
         # remove observed events
         conv.event = (e for e in event when !e.event_id.match(/observed_/))
@@ -78,7 +78,7 @@ findByEventId = (conv, event_id) ->
 
 findLastReadEventsByUser = (conv) ->
     last_seen_events_by_user = {}
-    for contact in conv.read_state
+    for contact in conv.read_state ? []
         chat_id = contact.participant_id.chat_id
         last_read = contact.last_read_timestamp ? contact.latest_read_timestamp
         for e in conv.event ? [] when e.timestamp <= last_read

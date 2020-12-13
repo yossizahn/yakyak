@@ -20,10 +20,18 @@ debug = process.argv.includes '--debug'
 tmp.setGracefulCleanup()
 
 app = require('electron').app
+
+console.log('Starting Yakyak v' + app.getVersion() + '...')
+console.log('  using hangupsjs v' + Client.VERSION) if Client.VERSION
+console.log('--------')
 app.disableHardwareAcceleration() # was using a lot of resources needlessly
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
 BrowserWindow = require('electron').BrowserWindow
+
+# Moving out of UI into main process
+{ Menu, Tray, nativeImage } = require('electron')
+tray = null # set global tray
 
 # Path for configuration
 userData = path.normalize(app.getPath('userData'))
@@ -86,6 +94,7 @@ quit = ->
     global.forceClose = true
     # force all windows to close
     mainWindow.destroy() if mainWindow?
+    console.log('--------\nGoodbye')
     app.quit()
     return
 
@@ -142,16 +151,19 @@ app.on 'ready', ->
         "min-height": 420
         icon: path.join __dirname, 'icons', icon_name
         show: false
+        spellcheck: true
         autohideMenuBar: true
         webPreferences: {
+            enableRemoteModule: true
             nodeIntegration: true
+            contextIsolation: false
             # preload: path.join(app.getAppPath(), 'ui', 'app.js')
         }
         # autoHideMenuBar : true unless process.platform is 'darwin'
     }
 
     if process.platform is 'darwin'
-        windowOpts.titleBarStile = 'hiddenInset'
+        windowOpts.titleBarStyle = 'hiddenInset'
 
     if process.platform is 'win32'
         windowOpts.frame = false
@@ -165,11 +177,13 @@ app.on 'ready', ->
         mainWindow.maximize()
         mainWindow.show()
         # this will also show more debugging from hangupsjs client
-        log.level('debug');
-        try
-            require('devtron').install()
-        catch
-            # do nothing
+        log.level 'debug'
+        client.loglevel 'debug'
+        # devtron in not maintained
+        #try
+        #    require('devtron').install()
+        #catch
+        #    # do nothing
 
     # and load the index.html of the app. this may however be yanked
     # away if we must do auth.
@@ -334,6 +348,31 @@ app.on 'ready', ->
             mainWindow.focus()
         else
             mainWindow.show()
+
+    ipc.handle 'tray-destroy', (ev) ->
+        if tray
+            tray.destroy()
+            tray = null if tray.isDestroyed()
+
+    ipc.handle 'tray', (ev, menu, iconpath, toolTip) ->
+        if tray # create tray if it doesn't exist
+          tray.setImage iconpath unless tray.currentImage == iconpath
+        else
+          tray = new Tray iconpath
+
+        tray.currentImage = iconpath
+
+        tray.setToolTip toolTip
+        tray.on 'click', (ev) -> ipcsend 'menuaction', 'togglewindow'
+
+        if menu
+            # build functions that cannot be sent via ipc
+            contextMenu = menu.map (el) ->
+                el.click = (r)->
+                    ipcsend 'menuaction', el.click_action
+                # delete el.click_action
+                el
+            tray.setContextMenu Menu.buildFromTemplate contextMenu
 
     #
     #

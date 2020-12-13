@@ -37,6 +37,7 @@ module.exports = exp = {
     escapeClearsInput: tryparse(localStorage.escapeClearsInput) or false
     showtray: tryparse(localStorage.showtray) or false
     hidedockicon: tryparse(localStorage.hidedockicon) or false
+    colorblind: tryparse(localStorage.colorblind) or false
     startminimizedtotray: tryparse(localStorage.startminimizedtotray) or false
     closetotray: tryparse(localStorage.closetotray) or false
     showDockOnce: true
@@ -45,6 +46,7 @@ module.exports = exp = {
     forceCustomSound: tryparse(localStorage.forceCustomSound) ? false
     language: localStorage.language ? 'en'
     useSystemDateFormat: localStorage.useSystemDateFormat is "true"
+    spellcheckLanguage: localStorage.spellcheckLanguage ? 'none'
     # non persistent!
     messageMemory: {}      # stores input when swithching conversations
     cachedInitialsCode: {} # code used for colored initials, if no avatar
@@ -69,6 +71,16 @@ module.exports = exp = {
             # set a first active timestamp to avoid requesting
             # syncallnewevents on startup
             require('./connection').setLastActive(Date.now(), true)
+        updated 'viewstate'
+
+    setSpellCheckLanguage: (language, mainWindow) ->
+        return if @language == language
+
+        if language == 'none'
+            mainWindow.webContents.session.setSpellCheckerLanguages([])
+        else
+            mainWindow.webContents.session.setSpellCheckerLanguages([language])
+        @spellcheckLanguage = localStorage.spellcheckLanguage = language
         updated 'viewstate'
 
     setLanguage: (language) ->
@@ -284,6 +296,10 @@ module.exports = exp = {
 
     setEscapeClearsInput: (value) ->
         @escapeClearsInput = localStorage.escapeClearsInput = value
+        updated 'viewstate'
+
+    setColorblind: (value) ->
+        @colorblind = localStorage.colorblind = value
         updated 'viewstate'
 
     setShowTray: (value) ->

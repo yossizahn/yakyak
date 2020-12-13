@@ -4,9 +4,8 @@ less       = require 'gulp-less'
 rimraf     = require 'rimraf'
 path       = require 'path'
 fs         = require 'fs'
-gutil      = require 'gulp-util'
 sourcemaps = require 'gulp-sourcemaps'
-install    = require 'gulp-install'
+reinstall    = require 'gulp-reinstall'
 {execSync} = require 'child_process'
 concat     = require 'gulp-concat'
 liveReload = require 'gulp-livereload'
@@ -14,6 +13,7 @@ changed    = require 'gulp-changed'
 rename     = require 'gulp-rename'
 packager   = require 'electron-packager'
 flatpak    = try require 'electron-installer-flatpak'
+debian     = try require 'electron-installer-debian'
 filter     = require 'gulp-filter'
 Q          = require 'q'
 Stream     = require 'stream'
@@ -57,7 +57,8 @@ json = JSON.parse(fs.readFileSync('./package.json'))
 
 deploy_options = {
     dir: path.join __dirname, 'app'
-    asar: false
+    asar:
+        unpackDir: "{node_modules/node-notifier/vendor/**,icons}"
     icon: path.join __dirname, 'src', 'icons', 'icon'
     out: outdeploy
     overwrite: true
@@ -90,7 +91,8 @@ gulp.task 'package', ->
     gulp.src paths.package
 #        .pipe changed outapp
         .pipe gulp.dest outapp
-        .pipe install()
+        .pipe reinstall()
+        #.pipe reinstall({ production: true }) # electron-packager doesn't like this
 
 
 # compile coffeescript
@@ -145,6 +147,11 @@ gulp.task 'icons', ->
         'icon-unread_032.png': 'icon-unread@2x.png'
         'icon-unread_020.png': 'icon-unread@20.png'
         'icon-unread_128.png': 'icon-unread@8x.png'
+        # Read icon in tray (linux/windows - colorblind)
+        'icon-read_016_blue.png': 'icon-read_blue.png'
+        'icon-read_032_blue.png': 'icon-read@2x_blue.png'
+        'icon-read_020_blue.png': 'icon-read@20_blue.png'
+        'icon-read_128_blue.png': 'icon-read@8x_blue.png'
         # Read icon in tray (linux/windows)
         'icon-read_016.png': 'icon-read.png'
         'icon-read_032.png': 'icon-read@2x.png'
@@ -231,6 +238,7 @@ names = {linux: [], win32: [], darwin: []}
 #
 
 zipIt = (folder, filePrefix, done) ->
+    # use zip
     ext = 'zip'
     zipName = path.join outdeploy, "#{filePrefix}.#{ext}"
     folder = path.basename folder
@@ -243,11 +251,25 @@ zipIt = (folder, filePrefix, done) ->
     compressIt('zip', args, opts, zipName, done)
 
 tarIt = (folder, filePrefix, done) ->
+    # use GNU tar to make gzipped tar archive
     ext = 'tar.gz'
     zipName = path.join outdeploy, "#{filePrefix}.#{ext}"
     folder = path.basename folder
     #
     args = ['-czf', zipName, folder]
+    opts = {
+        cwd: outdeploy
+        stdio: [0, 1, 'pipe']
+    }
+    compressIt('tar', args, opts, zipName, done)
+
+zipItWin = (folder, filePrefix, done) ->
+    # use built-in tar.exe to make zip archive
+    ext = 'zip'
+    zipName = path.join outdeploy, "#{filePrefix}.#{ext}"
+    folder = path.basename folder
+    #
+    args = ['-cf', zipName, folder]
     opts = {
         cwd: outdeploy
         stdio: [0, 1, 'pipe']
@@ -313,6 +335,10 @@ deploy = (platform, arch, cb) ->
                     tarIt zippath, fileprefix, ->
                       cb()
                       deferred.resolve()
+                else if platform == 'win32'
+                    zipItWin zippath, fileprefix, ->
+                      cb()
+                      deferred.resolve()
                 else
                     zipIt zippath, fileprefix, ->
                       cb()
@@ -332,7 +358,7 @@ platformOpts.map (plat) ->
     #
 
 archOpts.forEach (arch) ->
-    ['deb', 'rpm', 'pacman'].forEach (target) ->
+    ['rpm', 'pacman'].forEach (target) ->
         gulp.task "deploy:linux-#{arch}:#{target}:nodep", (done) ->
 
             archNameSuffix = archName
@@ -350,10 +376,10 @@ archOpts.forEach (arch) ->
                 suffix = 'tar.gz'
             else
                 suffix = target
-  
+
             if target == 'pacman'
                 packageName = json.name + '-VERSION-linux-' + archNameSuffix + '-pacman.' + suffix
-            else   
+            else
                 packageName = json.name + '-VERSION-linux-' + archNameSuffix + '.' + suffix
             iconArgs = [16, 32, 48, 128, 256, 512].map (size) ->
                 if size < 100
@@ -408,6 +434,44 @@ archOpts.forEach (arch) ->
 
         gulp.task "deploy:linux-#{arch}:#{target}",
             gulp.series("deploy:linux-#{arch}", "deploy:linux-#{arch}:#{target}:nodep")
+
+    gulp.task "deploy:linux-#{arch}:deb:nodep", (done) ->
+
+        options = {
+            src: "dist/#{json.name}-linux-#{arch}"
+            dest: 'dist/'
+            name: 'YakYak'
+            genericName: 'IM Client'
+            productName: 'YakYak'
+            version: json.version
+            bin: 'yakyak'
+            desktopTemplate: 'resources/desktop.ejs'
+            icon:
+              '16x16': 'src/icons/icon_016.png'
+              '32x32': 'src/icons/icon_032.png'
+              '48x48': 'src/icons/icon_048.png'
+              '128x128': 'src/icons/icon_128.png',
+              '256x256': 'src/icons/icon_256.png',
+              '512x512': 'src/icons/icon_512.png',
+              'scalable': 'src/icons/yakyak-logo.svg',
+            categories: [
+              'GNOME'
+              'GTK'
+              'Network'
+              'InstantMessaging'
+            ]
+        }
+
+        if arch is 'ia32'
+            options.arch = 'i386'
+        else
+            options.arch = 'amd64'
+
+        options.rename = (dest, src) -> path.join(dest, "#{json.name}-#{json.version}-linux-#{options.arch}.deb")
+        debian options
+
+    gulp.task "deploy:linux-#{arch}:deb",
+        gulp.series("deploy:linux-#{arch}", "deploy:linux-#{arch}:deb:nodep")
 
     gulp.task "deploy:linux-#{arch}:flatpak:nodep", (done) ->
         flatpakOptions =

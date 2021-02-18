@@ -205,7 +205,7 @@ module.exports = view (models) ->
 
 drawMessageAvatar = (u, sender, viewstate, entity) ->
     div class: 'sender-wrapper', ->
-        a href:linkto(u.cid), title: sender, {onclick}, class:'sender', ->
+        a title: sender, class:'sender', ->
             drawAvatar(u.cid, viewstate, entity)
         span sender
 
@@ -293,7 +293,7 @@ scrollToBottom = module.exports.scrollToBottom = ->
     # ensure we're scrolled to bottom
     el = document.querySelector('.main')
     # to bottom
-    el.scrollTop = Number.MAX_SAFE_INTEGER
+    el.scrollTop = 0
 
 
 ifpass = (t, f) -> if t then f else pass

@@ -1,6 +1,6 @@
 {
   "name": "yakyak",
-  "version": "1.5.10",
+  "version": "1.5.11.1",
   "description": "Chat client for Google Hangouts",
   "main": "main.js",
   "scripts": {
@@ -14,6 +14,7 @@
     "deploy:linux": "gulp deploy:linux",
     "deploy:win32": "gulp deploy:win32",
     "deploy:darwin": "gulp deploy:darwin",
+    "deploy:linux-arm64": "gulp deploy:linux-arm64",
     "deploy:linux-x64": "gulp deploy:linux-x64",
     "deploy:linux-x64:deb": "gulp deploy:linux-x64:deb",
     "deploy:linux-x64:flatpak": "gulp deploy:linux-x64:flatpak",
@@ -27,6 +28,7 @@
     "deploy:win32-x64": "gulp deploy:win32-x64",
     "deploy:win32-ia32": "gulp deploy:win32-ia32",
     "deploy:darwin-x64": "gulp deploy:darwin-x64",
+    "deploy:darwin-arm64": "gulp deploy:darwin-arm64",
     "snyk-protect": "snyk protect"
   },
   "repository": {
@@ -64,11 +66,11 @@
     "electron-installer-debian": "^3.1.0",
     "electron-installer-flatpak": "^0.6.0",
     "got": "^11.8.0",
-    "hangupsjs": "github:yakyak/hangupsjs#coffeescriptv2",
-    "i18n": "^0.11.0",
+    "hangupsjs": "github:yakyak/hangupsjs#v1.5-stable",
+    "i18n": "^0.13.2",
     "mime-types": "^2.1.27",
     "moment": "^2.28.0",
-    "node-notifier": "^7.0.2",
+    "node-notifier": "^9.0.0",
     "notr": "^1.1.2",
     "q": "^1.5.1",
     "snyk": "^1.425.4",

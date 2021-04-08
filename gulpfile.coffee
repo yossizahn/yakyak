@@ -51,7 +51,7 @@ paths =
 outdeploy = path.join __dirname, 'dist'
 
 platformOpts = ['linux', 'darwin', 'win32']
-archOpts =     ['x64','ia32']
+archOpts =     ['x64','ia32','arm64']
 
 json = JSON.parse(fs.readFileSync('./package.json'))
 
@@ -306,7 +306,7 @@ deploy = (platform, arch, cb) ->
     opts.arch = arch
     #
     # restriction darwin won't compile ia32
-    if platform == 'darwin' && arch == 'ia32'
+    if platform is 'darwin' and arch is 'ia32'
         cb()
         deferred.resolve()
         return deferred.promise
@@ -317,6 +317,7 @@ deploy = (platform, arch, cb) ->
     if platform == 'darwin'
         packOpts.name = 'YakYak'
     #
+    console.log('packOpts', packOpts)
     packager(packOpts)
         .catch (error) ->
             console.error(error)
@@ -327,7 +328,7 @@ deploy = (platform, arch, cb) ->
                     return deferred.resolve()
                 zippath = "#{appPaths[0]}/"
                 if platform == 'darwin'
-                    fileprefix = "yakyak-#{json.version}-osx"
+                    fileprefix = "yakyak-#{json.version}-osx-#{arch}"
                 else
                     fileprefix = "yakyak-#{json.version}-#{platform}-#{arch}"
 
@@ -335,7 +336,7 @@ deploy = (platform, arch, cb) ->
                     tarIt zippath, fileprefix, ->
                       cb()
                       deferred.resolve()
-                else if platform == 'win32'
+                else if platform == 'win32' && process.platform == 'win32'
                     zipItWin zippath, fileprefix, ->
                       cb()
                       deferred.resolve()
@@ -368,9 +369,12 @@ archOpts.forEach (arch) ->
             else if target is 'deb'
                 archName = 'amd64'
                 archNameSuffix = 'amd64'
-            else
+            else if arch is 'x64'
                 archName = 'x86_64'
                 archNameSuffix = 'x64'
+            else
+                archName = arch
+                archNameSuffix = arch
 
             if target == 'pacman'
                 suffix = 'tar.gz'
@@ -404,6 +408,7 @@ archOpts.forEach (arch) ->
                 '--package', "./dist/#{packageName}"
                 '--after-install', './resources/linux/after-install.sh'
                 '--after-remove', './resources/linux/after-remove.sh'
+                '--pacman-compression', 'gz'
                 "./dist/#{json.name}-linux-#{arch}/.=/opt/#{json.name}"
                 "./resources/linux/app.desktop=/usr/share/applications/#{json.name}.desktop"
             ].concat iconArgs
@@ -464,8 +469,10 @@ archOpts.forEach (arch) ->
 
         if arch is 'ia32'
             options.arch = 'i386'
-        else
+        else if arch is 'x64'
             options.arch = 'amd64'
+        else
+            options.arch = arch
 
         options.rename = (dest, src) -> path.join(dest, "#{json.name}-#{json.version}-linux-#{options.arch}.deb")
         debian options

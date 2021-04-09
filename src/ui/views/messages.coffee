@@ -448,7 +448,7 @@ formatAttachment = (att) ->
         div class:'attach', ->
             a {href, onclick}, ->
                 if models.viewstate.showImagePreview
-                    img src:thumb
+                    img src:href
                 else
                     i18n.__('conversation.no_preview_image_click_to_open:Image preview is disabled: click to open it in the browser')
 
